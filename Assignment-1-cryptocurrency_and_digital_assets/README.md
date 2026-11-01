@@ -166,11 +166,28 @@ Alternatively, deploy through **Remix IDE** with *Injected Provider – MetaMask
 
 ## Deployed contracts (Sepolia testnet)
 
-| Contract | Address | Etherscan |
+Both contracts were deployed through Remix IDE (Injected Provider – MetaMask) with Solidity 0.8.28, EVM `cancun`, optimizer on (200 runs), and their source code is verified on [Sourcify](https://sourcify.dev) (Exact Match).
+
+| Item | Address / hash | Link |
 |---|---|---|
-| ALUAssetRegistry | `<address>` | `<https://sepolia.etherscan.io/address/...>` |
-| ALULogoToken | `<address>` | `<https://sepolia.etherscan.io/address/...>` |
-| Logo registration tx | — | `<https://sepolia.etherscan.io/tx/...>` |
+| ALUAssetRegistry | `0x6caC78575f42e232017B602F11dfF61456D89E70` | [Etherscan](https://sepolia.etherscan.io/address/0x6caC78575f42e232017B602F11dfF61456D89E70) · [Sourcify](https://repo.sourcify.dev/11155111/0x6caC78575f42e232017B602F11dfF61456D89E70) |
+| ALULogoToken (ALUT) | `0x835292dDDd678cCf2447321CA354E5A490DB69E2` | [Etherscan](https://sepolia.etherscan.io/address/0x835292dDDd678cCf2447321CA354E5A490DB69E2) · [Sourcify](https://repo.sourcify.dev/11155111/0x835292dDDd678cCf2447321CA354E5A490DB69E2) |
+| Registry deployment tx | `0x36e235a3…5006020c` | [Etherscan](https://sepolia.etherscan.io/tx/0x36e235a324e6e2c3b6f1465602afa047f9d533b3862bf6746cfbe84f5006020c) |
+| Logo registration tx (`registerAsset`, token ID 1) | `0xb6a7e459…c9a34415` | [Etherscan](https://sepolia.etherscan.io/tx/0xb6a7e4596594a7b74952430edf4e8c99f928b4f1ee9a0bc04be26bd5c9a34415) |
+| Token deployment tx (1,000,000 ALUT minted to owner) | `0xaaad338f…4f862c5` | [Etherscan](https://sepolia.etherscan.io/tx/0xaaad338f9128b1aa84381e955b97a012f59b6828e8b623ec659e9ee8a4f862c5) |
+| `distributeShares` tx (100,000 ALUT to a stakeholder) | `0xd438e5b6…44430e05` | [Etherscan](https://sepolia.etherscan.io/tx/0xd438e5b62f9753c7da0d520370ced9f1e53d640e300cdc570489a47744430e05) |
+
+### Results verified on Sepolia
+
+| Call | Result |
+|---|---|
+| `verifyLogoIntegrity(1, 0xa833…52c5)` | `true`, "Logo is authentic." |
+| `verifyLogoIntegrity(1, 0xa833…52c6)` (one character changed) | `false`, "Warning: logo does not match." |
+| `getAsset(1)` | ALU Official Logo, image/png, `0xa833…52c5`, `0x605e…690C`, 1793531712 (1 Nov 2026, 13:15:12 CAT) |
+| `ownerOf(1)` | `0x605e441Eb60F981B31CC4bb5ba0373D09461690C` |
+| `balanceOf(owner)` after deployment | 1,000,000 |
+| `ownershipPercentage(owner)` after distributing 100,000 | 90 |
+| `ownershipPercentage(stakeholder)` | 10 |
 
 ---
 
@@ -179,7 +196,8 @@ Alternatively, deploy through **Remix IDE** with *Injected Provider – MetaMask
 1. **`ENOSPC: no space left on device` during `npm install`.** The `/home` partition was full. Freed about 3 GB by removing old installers and an already-imported VM image, then reinstalled cleanly (`rm -rf node_modules package-lock.json && npm install`).
 2. **`DeclarationError: Function "mcopy" not found` during compilation.** OpenZeppelin 5.x uses the `mcopy` opcode introduced in the Cancun upgrade, which Solidity 0.8.24 does not target by default. Fixed by upgrading to Solidity **0.8.28** and setting `evmVersion: "cancun"` in `hardhat.config.js`.
 3. **OpenZeppelin v5 breaking changes.** `Counters.sol` was removed and `Ownable` now requires the initial owner in its constructor. The registry uses a plain `uint256` counter, and the token passes `logoOwner` to `Ownable(logoOwner)`.
-4. **Hardhat 2 vs Hardhat 3.** Hardhat 3 changed the project format, so the project pins **Hardhat 2** to keep the CommonJS `scripts/deploy.js` and Mocha/Chai test setup.
+4. **Remix lost open files after a page refresh / MetaMask not detected in Brave.** Remix reloads its file tabs on refresh (the files stay in the File Explorer), and MetaMask had to be installed in Brave and Brave's built-in wallet disabled (`brave://settings/wallet` → *Extensions (no fallback)*) before Remix's *Browser Extension* environment could see it.
+5. **Hardhat 2 vs Hardhat 3.** Hardhat 3 changed the project format, so the project pins **Hardhat 2** to keep the CommonJS `scripts/deploy.js` and Mocha/Chai test setup.
 
 ---
 
