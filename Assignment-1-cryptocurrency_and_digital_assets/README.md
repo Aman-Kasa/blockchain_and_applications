@@ -35,7 +35,7 @@ If even one pixel of the file changes, the hash will be completely different and
 | Tool | Version |
 |---|---|
 | Solidity | 0.8.28 (`evmVersion: cancun`) |
-| Hardhat | 2.x (run `npx hardhat --version` for the exact version) |
+| Hardhat | 2.29.1 |
 | OpenZeppelin Contracts | 5.x |
 | Hardhat Toolbox | 5.x (ethers v6, Mocha, Chai) |
 | Node.js | v20 |
@@ -100,8 +100,8 @@ If even one pixel of the file changes, the hash will be completely different and
 ### 1. Install dependencies
 
 ```bash
-git clone <this-repo-url>
-cd <repo-folder>
+git clone https://github.com/Aman-Kasa/blockchain_and_applications.git
+cd blockchain_and_applications/Assignment-1-cryptocurrency_and_digital_assets
 npm install
 ```
 
