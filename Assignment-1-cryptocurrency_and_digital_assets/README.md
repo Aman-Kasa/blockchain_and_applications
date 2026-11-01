@@ -203,5 +203,5 @@ Both contracts were deployed through Remix IDE (Injected Provider – MetaMask) 
 
 ## Links
 
-- GitHub repository: `<your public repo URL>`
-- Demo video: `<your video link>`
+- GitHub repository: https://github.com/Aman-Kasa/blockchain_and_applications/tree/main/Assignment-1-cryptocurrency_and_digital_assets
+- Demo video: https://www.youtube.com/watch?v=MWcdP7-wWuk
