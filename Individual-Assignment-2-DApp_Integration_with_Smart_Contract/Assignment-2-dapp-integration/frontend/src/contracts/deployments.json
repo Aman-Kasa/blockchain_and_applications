@@ -1,0 +1,16 @@
+{
+  "sepolia": {
+    "chainId": 11155111,
+    "chainName": "Sepolia",
+    "rpcUrl": "https://ethereum-sepolia-rpc.publicnode.com",
+    "registry": "0x6caC78575f42e232017B602F11dfF61456D89E70",
+    "token": "0x835292dDDd678cCf2447321CA354E5A490DB69E2",
+    "logoTokenId": 1,
+    "logoHash": "0xa833391cae5c6ba476d77d339c3f7100d96dd9e7fea3faed4b6efaafba2452c5",
+    "deployBlock": null,
+    "explorer": "https://sepolia.etherscan.io",
+    "knownHolders": [
+      { "label": "Logo owner", "address": "0x605e441Eb60F981B31CC4bb5ba0373D09461690C" }
+    ]
+  }
+}
