@@ -20,11 +20,11 @@
     "chainId": 31337,
     "chainName": "Hardhat Local",
     "rpcUrl": "http://127.0.0.1:8545",
-    "registry": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    "token": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    "registry": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+    "token": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
     "logoTokenId": 1,
     "logoHash": "0xa833391cae5c6ba476d77d339c3f7100d96dd9e7fea3faed4b6efaafba2452c5",
-    "deployBlock": 1,
+    "deployBlock": 7,
     "knownHolders": [
       {
         "label": "Logo owner (deployer)",
