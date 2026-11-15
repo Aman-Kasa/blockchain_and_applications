@@ -201,6 +201,6 @@ Open http://localhost:5173. The app uses the `localhost` deployment when it exis
 
 ## Links
 
-- GitHub repository: https://github.com/Aman-Kasa/blockchain_and_applications/tree/main/Assignment-2-dapp-integration
-- Formative 1 (contracts, Sepolia deployment): [../Assignment-1-cryptocurrency_and_digital_assets](../Assignment-1-cryptocurrency_and_digital_assets)
+- GitHub repository: https://github.com/Aman-Kasa/blockchain_and_applications/tree/main/Individual-Assignment-2-DApp_Integration_with_Smart_Contract/Assignment-2-dapp-integration
+- Formative 1 (contracts, Sepolia deployment): [../Assignment-1-cryptocurrency_and_digital_assets](../../Assignment-1-cryptocurrency_and_digital_assets)
 - Demo video: _add link_
