@@ -1,0 +1,26 @@
+{
+  "name": "watertrust",
+  "version": "1.0.0",
+  "description": "WaterTrust - tamper-evident water-quality records with human witness consensus on Ethereum",
+  "author": "Aman Abraha Kasa",
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "coverage": "hardhat coverage",
+    "gas": "REPORT_GAS=true hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js --network hardhat",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
+    "demo:sepolia": "hardhat run scripts/demo.js --network sepolia",
+    "verify:sepolia": "hardhat verify --network sepolia"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.12",
+    "chai": "^4.5.0",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.19"
+  }
+}
