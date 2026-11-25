@@ -1,0 +1,9 @@
+{
+  "contract": "WaterTrust",
+  "address": "0x62f0357F2D236E7D7032f9A88385e08C21918a2C",
+  "deployer": "0x605e441Eb60F981B31CC4bb5ba0373D09461690C",
+  "txHash": "0x56cc1d050755485603891c90fbc85b897d68c8b0d1009aae361d345f95de0034",
+  "blockNumber": 12206586,
+  "network": "sepolia",
+  "deployedAt": "2026-11-25T02:16:37.325Z"
+}
