@@ -2,10 +2,25 @@
 
 Tamper-evident water-quality records for African water infrastructure, on Ethereum.
 
-IoT sensors post pH, turbidity and chlorine readings to a smart contract that checks them against WHO-based thresholds. Community witnesses double-check the sensor with a **commit–reveal** vote. If the humans disagree with the machine, the contract raises **TamperSuspected**, which catches spoofed or hacked sensors. Every incident has to be acknowledged and resolved on-chain by an accountable operator.
+*Author: Aman Abraha Kasa, BSc Software Engineering, African Leadership University · BlockChain and Applications, Final Summative*
 
-*Author: Aman Abraha Kasa, BSc Software Engineering, African Leadership University*
-*Application area: Healthcare (safe drinking water) · GCGOs: Infrastructure (primary), Healthcare (secondary)*
+## 📦 Final Summative deliverables
+
+| Deliverable | Where to find it |
+|---|---|
+| **Project report** (problem, mission, design, contract, deployment, testing) | [`docs/WaterTrust-Report-Aman-Kasa.pdf`](docs/WaterTrust-Report-Aman-Kasa.pdf) |
+| **Smart contract code** (Solidity 0.8.24, fully commented) | [`contracts/WaterTrust.sol`](contracts/WaterTrust.sol) |
+| **Deployment guide** (Hardhat + Remix, step by step) | [Deployment guide](#deployment-guide) section of this README |
+| **Test cases** (30 tests, expected vs actual, all passing) | [`TEST_CASES.md`](TEST_CASES.md) · code: [`test/WaterTrust.test.js`](test/WaterTrust.test.js) |
+| **Presentation slides** | [`docs/WaterTrust-Slides-Aman-Kasa.pdf`](docs/WaterTrust-Slides-Aman-Kasa.pdf) |
+| **Presentation video** (slides + live Sepolia demo) | [youtu.be/o19SMp1ZeUg](https://youtu.be/o19SMp1ZeUg) |
+| **Live contract on Sepolia** | [`0x62f0357F2D236E7D7032f9A88385e08C21918a2C`](https://sepolia.etherscan.io/address/0x62f0357F2D236E7D7032f9A88385e08C21918a2C) |
+| **Live dashboard** (used in the demo) | [`dashboard/`](dashboard/) · see [Live dashboard](#live-dashboard-for-the-demo) |
+
+**Application area:** Healthcare (safe drinking water) · **GCGOs:** Infrastructure (primary), Healthcare (secondary)
+
+## What it does
+IoT sensors post pH, turbidity and chlorine readings to a smart contract that checks them against WHO-based thresholds. Community witnesses double-check the sensor with a **commit–reveal** vote. If the humans disagree with the machine, the contract raises **TamperSuspected**, which catches spoofed or hacked sensors. Every incident has to be acknowledged and resolved on-chain by an accountable operator.
 
 ---
 
@@ -16,7 +31,11 @@ watertrust/
 ├── contracts/WaterTrust.sol      # the smart contract (Solidity 0.8.24)
 ├── test/WaterTrust.test.js       # 30 automated test cases (TC-01 … TC-30)
 ├── scripts/deploy.js             # deploys to any network, saves address to deployments/
-├── scripts/demo.js               # live 5-scene demo (incl. the "hacked sensor" attack)
+├── scripts/demo.js               # live 5-scene demo with 3 witness wallets (incl. the "hacked sensor" attack)
+├── scripts/demo-lite.js          # low-cost one-wallet demo; STEP=1 pauses before each scene
+├── dashboard/index.html          # live read-only dashboard used in the presentation
+├── docs/                         # project report and presentation slides (PDF)
+├── deployments/sepolia.json      # deployed contract address on Sepolia
 ├── hardhat.config.js
 ├── .env.example                  # copy to .env and fill in
 └── TEST_CASES.md                 # test case table: expected vs actual
@@ -116,6 +135,21 @@ It takes about 5–6 minutes, because it waits for the 120-second commit and rev
 📸 *Screenshot the terminal and a couple of the Etherscan transaction pages (look at the Logs tab for events).*
 
 Tip: you can try it locally first with `npx hardhat run scripts/demo.js` (finishes instantly).
+
+---
+
+## Live dashboard (for the demo)
+
+A read-only web page that watches the contract on Sepolia and updates every few seconds: readings, alerts, incidents, the commit-reveal countdown and witness reputation.
+
+```bash
+python3 -m http.server 8000        # run inside the watertrust folder
+```
+Open **http://localhost:8000/dashboard/?fresh** (`?fresh` starts with a clean screen and reacts only to new events; leave it off to see the full history). Then, in another terminal:
+```bash
+npx hardhat run scripts/demo-lite.js --network sepolia
+```
+Options: `?rpc=<url>` to use another RPC endpoint, `?address=<contract>` and `?from=<block>` for another deployment (for a local rehearsal: `?rpc=http://127.0.0.1:8545&address=<local address>&from=0`).
 
 ---
 

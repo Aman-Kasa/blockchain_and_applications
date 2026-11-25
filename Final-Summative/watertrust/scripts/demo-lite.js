@@ -21,6 +21,17 @@ const EXPLORER = network.name === "sepolia" ? "https://sepolia.etherscan.io/tx/"
 const Verdict = ["None", "Safe", "Unsafe"];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// STEP=1 : pause before each scene until you press Enter (lets you narrate at your own pace)
+const STEP = process.env.STEP === "1";
+async function next(label) {
+  if (!STEP) return;
+  process.stdout.write(`\n   ▶ press Enter for ${label} `);
+  await new Promise((resolve) => {
+    process.stdin.resume();
+    process.stdin.once("data", () => { process.stdin.pause(); resolve(); });
+  });
+}
+
 async function send(label, txPromise) {
   const tx = await txPromise;
   const receipt = await tx.wait();
@@ -95,12 +106,14 @@ async function main() {
   if ((await wt.minQuorum()) !== 1n) await send("setMinQuorum(1)", wt.setMinQuorum(1));
 
   // ── Scene 2 ──
+  await next("Scene 2: clean water");
   console.log("\nScene 2 — Sensor reports clean water (pH 7.20, 0.80 NTU, Cl 0.35 mg/L)");
   let rc = await send("submitReading(720, 80, 35)", wt.submitReading(720, 80, 35, ethers.id(`batch-${Date.now()}-ok`)));
   let ev = findEvent(wt, rc, "ReadingSubmitted");
   console.log(`     → reading #${ev.args.readingId} safe = ${ev.args.safe}`);
 
   // ── Scene 3 ──
+  await next("Scene 3: contaminated water");
   console.log("\nScene 3 — Sensor reports contaminated water (pH 5.40, 12.00 NTU)");
   rc = await send("submitReading(540, 1200, 35)", wt.submitReading(540, 1200, 35, ethers.id(`batch-${Date.now()}-bad`)));
   const alert = findEvent(wt, rc, "WaterAlert");
@@ -108,6 +121,7 @@ async function main() {
   console.log(`     🚨 WaterAlert! incident #${incidentId} opened for reading #${alert.args.readingId}`);
 
   // ── Scene 4 ──
+  await next("Scene 4: operator responds");
   console.log("\nScene 4 — Operator takes responsibility");
   await send(`acknowledgeIncident(${incidentId})`, wt.acknowledgeIncident(incidentId));
   await send(
@@ -118,6 +132,7 @@ async function main() {
   console.log(`     → status = ${["Open", "Acknowledged", "Resolved"][Number(inc.status)]}`);
 
   // ── Scene 5 ──
+  await next("Scene 5: the attack");
   console.log("\nScene 5 — ATTACK: spoofed sensor reports 'safe' while water is contaminated");
   rc = await send("submitReading(720, 80, 35)  ← fake 'all good' data", wt.submitReading(720, 80, 35, ethers.id(`batch-${Date.now()}-spoofed`)));
   const spoofedId = findEvent(wt, rc, "ReadingSubmitted").args.readingId;
@@ -135,6 +150,7 @@ async function main() {
   await send("witness reveals UNSAFE", wt.revealVerdict(roundId, vote, salt));
   await waitUntil(opened.args.revealDeadline, "reveal phase to close");
 
+  await next("the verdict (finalizeRound)");
   rc = await send(`finalizeRound(${roundId})`, wt.finalizeRound(roundId));
   const fin = findEvent(wt, rc, "RoundFinalized");
   console.log(`     → consensus = ${Verdict[Number(fin.args.consensus)]} (safe ${fin.args.safeVotes} / unsafe ${fin.args.unsafeVotes})`);

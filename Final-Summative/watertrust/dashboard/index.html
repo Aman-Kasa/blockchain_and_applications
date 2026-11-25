@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WaterTrust Live</title>
+<style>
+  :root {
+    --ink: #0E2A36; --deep: #0A1F28; --panel: #12333F; --line: #24536A;
+    --text: #E6EFEE; --muted: #9FBFC2; --aqua: #5FD0DF; --teal: #0E7C8C;
+    --ok: #3FBF7F; --warn: #E8A33D; --bad: #E5484D;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--deep); color: var(--text); font-family: Inter, system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
+  header { display: flex; align-items: center; gap: 16px; padding: 16px 28px; background: var(--ink); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header h1 { font-size: 22px; margin: 0; letter-spacing: .3px; }
+  header h1 span { color: var(--aqua); }
+  .pill { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); }
+  .pill a { color: var(--aqua); text-decoration: none; }
+  .live { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); }
+  .dot.on { background: var(--ok); box-shadow: 0 0 0 0 rgba(63,191,127,.7); animation: pulse 2s infinite; }
+  .dot.err { background: var(--bad); }
+  @keyframes pulse { 70% { box-shadow: 0 0 0 10px rgba(63,191,127,0); } 100% { box-shadow: 0 0 0 0 rgba(63,191,127,0); } }
+
+  .banner { margin: 20px 28px 0; padding: 22px 28px; border-radius: 16px; border: 2px solid var(--line); background: var(--panel); transition: background .4s, border-color .4s; }
+  .banner .b-title { font-size: 30px; font-weight: 700; letter-spacing: .5px; }
+  .banner .b-sub { font-size: 16px; color: var(--muted); margin-top: 6px; }
+  .banner.ok { border-color: var(--ok); background: linear-gradient(90deg, rgba(63,191,127,.18), var(--panel)); }
+  .banner.warn { border-color: var(--warn); background: linear-gradient(90deg, rgba(232,163,61,.25), var(--panel)); }
+  .banner.bad { border-color: var(--bad); background: linear-gradient(90deg, rgba(229,72,77,.30), var(--panel)); }
+  .banner.info { border-color: var(--aqua); background: linear-gradient(90deg, rgba(95,208,223,.18), var(--panel)); }
+  .banner.flash { animation: flash 0.6s ease-in-out 3; }
+  @keyframes flash { 50% { transform: scale(1.012); filter: brightness(1.35); } }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 20px 28px 0; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; }
+  .tile .v { font-size: 40px; font-weight: 700; }
+  .tile .l { font-size: 14px; color: var(--muted); }
+  .tile.bad .v { color: var(--bad); } .tile.warn .v { color: var(--warn); }
+
+  main { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 28px 28px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; min-width: 0; }
+  .panel.wide { grid-column: 1 / -1; }
+  .panel h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--aqua); margin: 0 0 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  td { padding: 8px 10px; border-bottom: 1px solid rgba(36,83,106,.5); }
+  tr.new td { animation: rowin 1.5s ease-out; }
+  @keyframes rowin { from { background: rgba(95,208,223,.35); } }
+  .mono { font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .5px; }
+  .tag.ok { background: rgba(63,191,127,.2); color: var(--ok); }
+  .tag.warn { background: rgba(232,163,61,.22); color: var(--warn); }
+  .tag.bad { background: rgba(229,72,77,.22); color: var(--bad); }
+  .tag.info { background: rgba(95,208,223,.18); color: var(--aqua); }
+  .out { color: var(--bad); font-weight: 700; }
+  a { color: var(--aqua); }
+
+  .round-big { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .countdown { font-size: 48px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .phase { font-size: 18px; font-weight: 700; }
+  .votes { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .vote { padding: 10px 14px; border-radius: 10px; background: var(--deep); border: 1px solid var(--line); font-size: 14px; }
+  .vote b { font-size: 22px; display: block; }
+  .bar { height: 8px; background: var(--deep); border-radius: 4px; overflow: hidden; margin-top: 12px; }
+  .bar i { display: block; height: 100%; background: var(--aqua); transition: width 1s linear; }
+
+  .feed { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow-y: auto; }
+  .feed li { display: flex; gap: 10px; padding: 8px 4px; border-bottom: 1px solid rgba(36,83,106,.5); font-size: 14px; }
+  .feed li.new { animation: rowin 1.5s ease-out; }
+  .feed .ico { width: 22px; text-align: center; }
+  .feed .meta { margin-left: auto; color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .empty { color: var(--muted); font-size: 14px; }
+  .err-msg { color: var(--bad); font-size: 13px; margin: 8px 28px 0; }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } .tiles { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>💧 WaterTrust <span>Live</span></h1>
+  <span class="pill" id="net">Sepolia</span>
+  <span class="pill">Contract <a id="addr" target="_blank" rel="noopener"></a></span>
+  <div class="live"><span class="dot" id="dot"></span><span id="status">connecting…</span></div>
+</header>
+<div class="err-msg" id="err"></div>
+
+<section class="banner info" id="banner">
+  <div class="b-title" id="b-title">Connecting to the blockchain…</div>
+  <div class="b-sub" id="b-sub">Reading WaterTrust events from Ethereum Sepolia</div>
+</section>
+
+<section class="tiles">
+  <div class="tile"><div class="v" id="t-readings">–</div><div class="l">Readings on-chain</div></div>
+  <div class="tile warn"><div class="v" id="t-unsafe">–</div><div class="l">Unsafe readings (WaterAlert)</div></div>
+  <div class="tile"><div class="v" id="t-open">–</div><div class="l">Open incidents</div></div>
+  <div class="tile bad"><div class="v" id="t-tamper">–</div><div class="l">Tamper alerts</div></div>
+</section>
+
+<main>
+  <div class="panel" id="round-panel">
+    <h2>Human verification round</h2>
+    <div id="round"><p class="empty">No verification round yet.</p></div>
+  </div>
+  <div class="panel">
+    <h2>Live event feed</h2>
+    <ul class="feed" id="feed"><li class="empty">Waiting for events…</li></ul>
+  </div>
+  <div class="panel wide">
+    <h2>Sensor readings (newest first)</h2>
+    <div id="readings"><p class="empty">No readings yet.</p></div>
+  </div>
+  <div class="panel">
+    <h2>Incidents (accountability log)</h2>
+    <div id="incidents"><p class="empty">No incidents.</p></div>
+  </div>
+  <div class="panel">
+    <h2>Community witnesses</h2>
+    <div id="witnesses"><p class="empty">No witnesses registered.</p></div>
+  </div>
+</main>
+
+<!-- ethers v6: loaded from the project's own node_modules; falls back to a CDN if missing -->
+<script src="../node_modules/ethers/dist/ethers.umd.min.js"></script>
+<script>
+  if (!window.ethers) document.write('<script src="https://unpkg.com/ethers@6.13.5/dist/ethers.umd.min.js"><\/script>');
+</script>
+<script>
+(() => {
+  // ── Configuration (override with ?address=…&rpc=…&from=… for a local rehearsal) ──
+  const params = new URLSearchParams(location.search);
+  const CFG = {
+    address: params.get("address") || "0x62f0357F2D236E7D7032f9A88385e08C21918a2C",
+    rpc: params.get("rpc") || "https://ethereum-sepolia-rpc.publicnode.com",
+    from: Number(params.get("from") ?? 12206586),
+  };
+  const EXPLORER = /127\.0\.0\.1|localhost/.test(CFG.rpc) ? "" : "https://sepolia.etherscan.io";
+  // ?fresh : start with a clean screen and react only to events that happen from now on (best for a live demo)
+  const FRESH = params.has("fresh");
+  const POLL_MS = 4000, CHUNK = 5000;
+
+  const ABI = [
+    "function siteCount() view returns (uint256)",
+    "function readingCount() view returns (uint256)",
+    "function incidentCount() view returns (uint256)",
+    "function roundCount() view returns (uint256)",
+    "function sites(uint256) view returns (string name, string location, bool active, uint16 phMin, uint16 phMax, uint32 turbidityMax, uint32 chlorineMin, uint32 chlorineMax)",
+    "function readings(uint256) view returns (uint256 siteId, address sensor, uint16 ph, uint32 turbidity, uint32 chlorine, bytes32 dataHash, uint64 timestamp, bool safe)",
+    "function incidents(uint256) view returns (uint256 siteId, uint256 readingId, uint8 kind, uint8 status, address handledBy, bytes32 noteHash, uint64 openedAt, uint64 closedAt)",
+    "function witnesses(address) view returns (bool registered, bool active, int32 reputation, uint32 roundsJoined)",
+    "function getRound(uint256) view returns (uint256 readingId, uint64 commitDeadline, uint64 revealDeadline, uint32 quorum, uint32 safeVotes, uint32 unsafeVotes, bool finalized, uint8 consensus, uint256 committerCount)",
+    "event SiteAdded(uint256 indexed siteId, string name, string location)",
+    "event SensorRegistered(address indexed sensor, uint256 indexed siteId)",
+    "event WitnessRegistered(address indexed witness)",
+    "event ReadingSubmitted(uint256 indexed readingId, uint256 indexed siteId, address indexed sensor, bool safe, bytes32 dataHash)",
+    "event WaterAlert(uint256 indexed incidentId, uint256 indexed siteId, uint256 readingId)",
+    "event IncidentOpened(uint256 indexed incidentId, uint256 indexed siteId, uint256 readingId, uint8 kind)",
+    "event IncidentAcknowledged(uint256 indexed incidentId, address indexed operator)",
+    "event IncidentResolved(uint256 indexed incidentId, address indexed operator, bytes32 noteHash)",
+    "event RoundOpened(uint256 indexed roundId, uint256 indexed readingId, uint64 commitDeadline, uint64 revealDeadline)",
+    "event VerdictCommitted(uint256 indexed roundId, address indexed witness)",
+    "event VerdictRevealed(uint256 indexed roundId, address indexed witness, bool safe)",
+    "event RoundFinalized(uint256 indexed roundId, uint8 consensus, uint32 safeVotes, uint32 unsafeVotes)",
+    "event TamperSuspected(uint256 indexed siteId, uint256 indexed readingId, uint256 roundId)",
+    "event ReputationChanged(address indexed witness, int32 newReputation)",
+  ];
+
+  const KIND = ["Unsafe reading", "Sensor mismatch"];
+  const STATUS = ["Open", "Acknowledged", "Resolved"];
+  const VERDICT = ["None", "Safe", "Unsafe"];
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const short = (a) => a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "–";
+  const fx = (v) => (Number(v) / 100).toFixed(2);
+  const txLink = (h, text) => EXPLORER ? `<a href="${EXPLORER}/tx/${esc(h)}" target="_blank" rel="noopener">${esc(text)}</a>` : esc(text);
+  const addrLink = (a) => EXPLORER ? `<a class="mono" href="${EXPLORER}/address/${esc(a)}" target="_blank" rel="noopener">${esc(short(a))}</a>` : `<span class="mono">${esc(short(a))}</span>`;
+  const mmss = (s) => { s = Math.max(0, Math.floor(s)); return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };
+
+  let provider, wt, lastBlock = 0, clockOffset = 0, live = false;
+  const S = { sites: {}, readings: {}, incidents: {}, rounds: {}, witnesses: {}, witnessAddrs: new Set(),
+              feed: [], tamperCount: 0, banner: null, fresh: new Set() };
+
+  // ── Events → feed + banner ──
+  function handleLog(log, isLive) {
+    const name = log.eventName;
+    if (!name) return;
+    const a = log.args;
+    if (FRESH && !isLive) { if (name === "WitnessRegistered") S.witnessAddrs.add(a.witness); return; }
+    let icon = "•", text = name, banner = null;
+    switch (name) {
+      case "SiteAdded": icon = "🏞️"; text = `Site #${a.siteId} added: ${a.name}`; break;
+      case "SensorRegistered": icon = "📡"; text = `Sensor ${short(a.sensor)} bound to site #${a.siteId}`; break;
+      case "WitnessRegistered": icon = "🧑‍🤝‍🧑"; text = `Witness ${short(a.witness)} registered`; S.witnessAddrs.add(a.witness); break;
+      case "ReadingSubmitted":
+        icon = a.safe ? "💧" : "⚠️"; text = `Reading #${a.readingId} on site #${a.siteId}: ${a.safe ? "safe" : "UNSAFE"}`;
+        banner = a.safe ? ["ok", `Reading #${a.readingId}: water is safe`, `Sensor ${short(a.sensor)} · data hash ${String(a.dataHash).slice(0, 14)}… anchored on-chain`] : null;
+        break;
+      case "WaterAlert": icon = "🚨"; text = `WATER ALERT: incident #${a.incidentId} for reading #${a.readingId}`;
+        banner = ["warn", `🚨 WATER ALERT: incident #${a.incidentId} opened`, `Reading #${a.readingId} on site #${a.siteId} is outside the safe limits. An operator must respond on-chain.`]; break;
+      case "IncidentOpened": icon = "📋"; text = `Incident #${a.incidentId} opened (${KIND[Number(a.kind)]})`; break;
+      case "IncidentAcknowledged": icon = "👷"; text = `Incident #${a.incidentId} acknowledged by ${short(a.operator)}`;
+        banner = ["warn", `👷 Incident #${a.incidentId} acknowledged`, `Operator ${short(a.operator)} has taken responsibility.`]; break;
+      case "IncidentResolved": icon = "✅"; text = `Incident #${a.incidentId} resolved by ${short(a.operator)}`;
+        banner = ["ok", `✅ Incident #${a.incidentId} resolved`, `Resolved by ${short(a.operator)} · report hash ${String(a.noteHash).slice(0, 14)}… stored forever`]; break;
+      case "RoundOpened": icon = "🗳️"; text = `Verification round #${a.roundId} opened for reading #${a.readingId}`;
+        banner = ["info", `🗳️ Human verification round #${a.roundId} is open`, `Community witnesses are checking reading #${a.readingId} with hidden (commit–reveal) votes.`]; break;
+      case "VerdictCommitted": icon = "🔒"; text = `Hidden vote committed by ${short(a.witness)}`; break;
+      case "VerdictRevealed": icon = "🔓"; text = `${short(a.witness)} revealed: ${a.safe ? "SAFE" : "UNSAFE"}`; break;
+      case "RoundFinalized": icon = "⚖️"; text = `Round #${a.roundId} finalized: consensus ${VERDICT[Number(a.consensus)]} (${a.safeVotes} safe / ${a.unsafeVotes} unsafe)`;
+        if (Number(a.consensus) === 1) banner = ["ok", `⚖️ Witnesses agree with the sensor`, `Round #${a.roundId}: ${a.safeVotes} safe / ${a.unsafeVotes} unsafe`]; break;
+      case "TamperSuspected": icon = "🛑"; text = `TAMPER SUSPECTED on reading #${a.readingId} (site #${a.siteId})`; S.tamperCount++;
+        banner = ["bad", `🛑 TAMPER SUSPECTED`, `Humans disagree with the sensor on reading #${a.readingId} (site #${a.siteId}). The sensor is faulty or under attack; an incident has been opened.`]; break;
+      case "ReputationChanged": icon = Number(a.newReputation) >= 0 ? "⭐" : "🔻"; text = `Reputation of ${short(a.witness)} is now ${a.newReputation}`; break;
+      default: return;
+    }
+    const item = { key: `${log.transactionHash}-${log.index}`, icon, text, block: log.blockNumber, tx: log.transactionHash, isLive };
+    S.feed.unshift(item);
+    if (S.feed.length > 200) S.feed.pop();
+    if (banner) S.banner = { cls: banner[0], title: banner[1], sub: banner[2], isLive };
+  }
+
+  async function loadLogs(from, to, isLive) {
+    for (let s = from; s <= to; s += CHUNK) {
+      const e = Math.min(to, s + CHUNK - 1);
+      const logs = await wt.queryFilter("*", s, e);
+      logs.sort((x, y) => x.blockNumber - y.blockNumber || x.index - y.index);
+      for (const l of logs) handleLog(l, isLive);
+      if (isLive && logs.length) return true;
+    }
+    return false;
+  }
+
+  // ── Contract state ──
+  async function refreshState() {
+    const [sc, rc, ic, roc] = (await Promise.all([wt.siteCount(), wt.readingCount(), wt.incidentCount(), wt.roundCount()])).map(Number);
+    const jobs = [];
+    for (let i = 1; i <= sc; i++) if (!S.sites[i]) jobs.push(wt.sites(i).then((v) => (S.sites[i] = v)));
+    for (let i = 1; i <= rc; i++) if (!S.readings[i]) jobs.push(wt.readings(i).then((v) => { S.readings[i] = v; if (live) S.fresh.add(`r${i}`); }));
+    for (let i = 1; i <= ic; i++) if (!S.incidents[i] || Number(S.incidents[i].status) !== 2) jobs.push(wt.incidents(i).then((v) => (S.incidents[i] = v)));
+    for (let i = 1; i <= roc; i++) if (!S.rounds[i] || !S.rounds[i].finalized) jobs.push(wt.getRound(i).then((v) => (S.rounds[i] = v)));
+    for (const a of S.witnessAddrs) jobs.push(wt.witnesses(a).then((v) => (S.witnesses[a] = v)));
+    await Promise.all(jobs);
+  }
+
+  // ── Rendering ──
+  function render() {
+    const readingIds = Object.keys(S.readings).map(Number).sort((a, b) => b - a);
+    const incidentIds = Object.keys(S.incidents).map(Number).sort((a, b) => b - a);
+    const unsafe = readingIds.filter((i) => !S.readings[i].safe).length;
+    const open = incidentIds.filter((i) => Number(S.incidents[i].status) !== 2).length;
+    $("t-readings").textContent = readingIds.length;
+    $("t-unsafe").textContent = unsafe;
+    $("t-open").textContent = open;
+    $("t-tamper").textContent = S.tamperCount;
+
+    if (S.banner) {
+      const b = $("banner");
+      b.className = `banner ${S.banner.cls}`;
+      $("b-title").textContent = S.banner.title;
+      $("b-sub").textContent = S.banner.sub;
+      if (S.banner.isLive) { void b.offsetWidth; b.classList.add("flash"); S.banner.isLive = false; }
+    } else if (live) {
+      $("banner").className = "banner info";
+      $("b-title").textContent = "Monitoring WaterTrust on-chain";
+      $("b-sub").textContent = FRESH ? "Live mode: waiting for new sensor readings, alerts and votes…" : "Waiting for the first sensor reading…";
+    }
+
+    // readings
+    if (readingIds.length) {
+      $("readings").innerHTML = `<table><tr><th>#</th><th>Site</th><th>pH</th><th>Turbidity (NTU)</th><th>Chlorine (mg/L)</th><th>Result</th><th>Sensor</th></tr>${readingIds.map((i) => {
+        const r = S.readings[i], s = S.sites[Number(r.siteId)];
+        const bad = (cond) => (cond ? ' class="out"' : "");
+        const phOut = s && (Number(r.ph) < Number(s.phMin) || Number(r.ph) > Number(s.phMax));
+        const tOut = s && Number(r.turbidity) > Number(s.turbidityMax);
+        const cOut = s && (Number(r.chlorine) < Number(s.chlorineMin) || Number(r.chlorine) > Number(s.chlorineMax));
+        const fresh = S.fresh.has(`r${i}`) ? ' class="new"' : "";
+        return `<tr${fresh}><td>${i}</td><td>${esc(s ? s.name : "#" + r.siteId)}</td><td${bad(phOut)}>${fx(r.ph)}</td><td${bad(tOut)}>${fx(r.turbidity)}</td><td${bad(cOut)}>${fx(r.chlorine)}</td><td>${r.safe ? '<span class="tag ok">SAFE</span>' : '<span class="tag warn">UNSAFE</span>'}</td><td>${addrLink(r.sensor)}</td></tr>`;
+      }).join("")}</table>`;
+    }
+    // incidents
+    if (incidentIds.length) {
+      $("incidents").innerHTML = `<table><tr><th>#</th><th>Kind</th><th>Reading</th><th>Status</th><th>Handled by</th></tr>${incidentIds.map((i) => {
+        const x = S.incidents[i], st = Number(x.status), k = Number(x.kind);
+        const stTag = st === 2 ? "ok" : st === 1 ? "info" : k === 1 ? "bad" : "warn";
+        return `<tr><td>${i}</td><td>${k === 1 ? '<span class="tag bad">SENSOR MISMATCH</span>' : '<span class="tag warn">UNSAFE READING</span>'}</td><td>#${x.readingId}</td><td><span class="tag ${stTag}">${STATUS[st].toUpperCase()}</span></td><td>${x.handledBy === ethers.ZeroAddress ? "–" : addrLink(x.handledBy)}</td></tr>`;
+      }).join("")}</table>`;
+    }
+    // witnesses
+    const wAddrs = [...S.witnessAddrs].filter((a) => S.witnesses[a]);
+    if (wAddrs.length) {
+      $("witnesses").innerHTML = `<table><tr><th>Witness</th><th>Reputation</th><th>Rounds</th></tr>${wAddrs.map((a) => {
+        const w = S.witnesses[a], rep = Number(w.reputation);
+        return `<tr><td>${addrLink(a)}</td><td><span class="tag ${rep > 0 ? "ok" : rep < 0 ? "bad" : "info"}">${rep > 0 ? "+" : ""}${rep}</span></td><td>${w.roundsJoined}</td></tr>`;
+      }).join("")}</table>`;
+    }
+    // feed
+    if (S.feed.length) {
+      $("feed").innerHTML = S.feed.map((f) => `<li class="${f.isLive ? "new" : ""}"><span class="ico">${f.icon}</span><span>${esc(f.text)}</span><span class="meta">${txLink(f.tx, "block " + f.block)}</span></li>`).join("");
+      S.feed.forEach((f) => (f.isLive = false));
+    }
+    renderRound();
+    S.fresh.clear();
+  }
+
+  function renderRound() {
+    const ids = Object.keys(S.rounds).map(Number).sort((a, b) => b - a);
+    if (!ids.length) return;
+    if (FRESH && !S.roundSeenLive && S.rounds[ids[0]].finalized) return;
+    if (!S.rounds[ids[0]].finalized) S.roundSeenLive = true;
+    const id = ids[0], r = S.rounds[id];
+    const now = Date.now() / 1000 + clockOffset;
+    const cd = Number(r.commitDeadline), rd = Number(r.revealDeadline);
+    let phase, cls, left;
+    if (r.finalized) { phase = "FINALIZED"; cls = Number(r.consensus) === 2 ? "bad" : Number(r.consensus) === 1 ? "ok" : "info"; }
+    else if (now <= cd) { phase = "COMMIT PHASE: hidden votes"; cls = "info"; left = cd - now; }
+    else if (now <= rd) { phase = "REVEAL PHASE: votes opened"; cls = "warn"; left = rd - now; }
+    else { phase = "READY TO FINALIZE"; cls = "warn"; }
+    const span = rd - cd;
+    const pct = r.finalized ? 100 : now <= cd ? 100 * (1 - (cd - now) / span) : now <= rd ? 100 * (1 - (rd - now) / span) : 100;
+    $("round").innerHTML = `
+      <div class="round-big">
+        <div><div class="phase"><span class="tag ${cls}">${phase}</span></div>
+          <div style="margin-top:6px;color:var(--muted)">Round #${id} · checking reading #${r.readingId} · quorum ${r.quorum}</div></div>
+        <div class="countdown" id="countdown">${left !== undefined ? mmss(left) : r.finalized ? VERDICT[Number(r.consensus)].toUpperCase() : "--:--"}</div>
+      </div>
+      <div class="bar"><i style="width:${Math.max(0, Math.min(100, pct))}%"></i></div>
+      <div class="votes">
+        <div class="vote"><b>${r.committerCount}</b>hidden votes committed</div>
+        <div class="vote"><b style="color:var(--ok)">${r.safeVotes}</b>revealed SAFE</div>
+        <div class="vote"><b style="color:var(--bad)">${r.unsafeVotes}</b>revealed UNSAFE</div>
+        <div class="vote"><b>${r.finalized ? VERDICT[Number(r.consensus)] : "…"}</b>consensus</div>
+      </div>`;
+  }
+
+  // ── Loop ──
+  function setStatus(ok, text) {
+    $("dot").className = `dot ${ok ? "on" : "err"}`;
+    $("status").textContent = text;
+  }
+
+  async function syncClock(bn) {
+    const block = await provider.getBlock(bn);
+    if (block) clockOffset = Number(block.timestamp) - Date.now() / 1000;
+  }
+
+  let busy = false;
+  async function poll() {
+    if (busy) return;
+    busy = true;
+    try {
+      const bn = await provider.getBlockNumber();
+      if (bn > lastBlock) {
+        const got = await loadLogs(lastBlock + 1, bn, true);
+        lastBlock = bn;
+        await syncClock(bn);
+        if (got) await refreshState();
+        else {
+          // keep open rounds fresh even without new events
+          const open = Object.keys(S.rounds).filter((i) => !S.rounds[i].finalized);
+          await Promise.all(open.map((i) => wt.getRound(i).then((v) => (S.rounds[i] = v))));
+        }
+        render();
+      }
+      setStatus(true, `live · block ${bn}`);
+      $("err").textContent = "";
+    } catch (e) {
+      setStatus(false, "connection problem, retrying…");
+      $("err").textContent = String(e && e.shortMessage ? e.shortMessage : e).slice(0, 200);
+    } finally {
+      busy = false;
+    }
+  }
+
+  async function init() {
+    $("addr").textContent = short(CFG.address);
+    if (EXPLORER) $("addr").href = `${EXPLORER}/address/${CFG.address}`;
+    if (!EXPLORER) $("net").textContent = "Local network";
+    try {
+      provider = new ethers.JsonRpcProvider(CFG.rpc, undefined, { staticNetwork: true, batchMaxCount: 1 });
+      wt = new ethers.Contract(CFG.address, ABI, provider);
+      const bn = await provider.getBlockNumber();
+      await loadLogs(CFG.from, bn, false);
+      lastBlock = bn;
+      await syncClock(bn);
+      await refreshState();
+      live = true;
+      render();
+      setStatus(true, `live · block ${bn}`);
+    } catch (e) {
+      setStatus(false, "could not connect");
+      $("err").textContent = `Could not read the contract: ${String(e && e.shortMessage ? e.shortMessage : e).slice(0, 240)}`;
+    }
+    setInterval(poll, POLL_MS);
+    setInterval(renderRound, 1000);
+  }
+
+  if (window.ethers) init();
+  else window.addEventListener("load", () => (window.ethers ? init() : ($("err").textContent = "ethers.js failed to load: run the page from the watertrust folder (see README).")));
+})();
+</script>
+</body>
+</html>
